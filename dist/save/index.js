@@ -61708,6 +61708,14 @@ var external_fs_default = /*#__PURE__*/__nccwpck_require__.n(external_fs_);
 function clientOverride() {
     return {
         ...(0,cache.defaultCacheClient)(),
+        reserveCache: async (key, string, paths) => {
+            core.info(JSON.stringify({ updated: "updated", key, string, paths }));
+            return {
+                statusCode: 200,
+                result: { cacheId: 2 },
+                headers: {}
+            };
+        },
         saveCache: async (cacheId, archivePath, options) => {
             core.info(JSON.stringify({ updated: "updated", cacheId, archivePath, options }));
         }
