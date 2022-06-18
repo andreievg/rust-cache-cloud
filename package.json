@@ -22,7 +22,7 @@
   },
   "homepage": "https://github.com/Swatinem/rust-cache#readme",
   "dependencies": {
-    "@actions/cache": "^2.0.2",
+    "@actions/cache-cloud": "andreievg/cache-cloud#c160d72be1fe5a3acbad3097733844fe95dc2728",
     "@actions/core": "^1.6.0",
     "@actions/exec": "^1.1.1",
     "@actions/glob": "^0.2.1",
