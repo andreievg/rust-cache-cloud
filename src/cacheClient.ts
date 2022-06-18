@@ -1,5 +1,5 @@
 import { CacheClient, defaultCacheClient } from "@actions/cache";
-import core from "@actions/core";
+import * as core from "@actions/core";
 
 export function clientOverride(): CacheClient {
     return {

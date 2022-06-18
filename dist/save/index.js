@@ -61693,7 +61693,6 @@ __nccwpck_require__.r(__webpack_exports__);
 var cache = __nccwpck_require__(7799);
 // EXTERNAL MODULE: ./node_modules/@actions/core/lib/core.js
 var core = __nccwpck_require__(2186);
-var core_default = /*#__PURE__*/__nccwpck_require__.n(core);
 // EXTERNAL MODULE: ./node_modules/@actions/exec/lib/exec.js
 var exec = __nccwpck_require__(1514);
 // EXTERNAL MODULE: ./node_modules/@actions/glob/lib/glob.js
@@ -61710,7 +61709,7 @@ function clientOverride() {
     return {
         ...(0,cache.defaultCacheClient)(),
         saveCache: async (cacheId, archivePath, options) => {
-            core_default().info(JSON.stringify({ updated: "updated", cacheId, archivePath, options }));
+            core.info(JSON.stringify({ updated: "updated", cacheId, archivePath, options }));
         }
     };
 }
