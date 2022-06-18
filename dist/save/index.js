@@ -61693,6 +61693,7 @@ __nccwpck_require__.r(__webpack_exports__);
 var cache = __nccwpck_require__(7799);
 // EXTERNAL MODULE: ./node_modules/@actions/core/lib/core.js
 var core = __nccwpck_require__(2186);
+var core_default = /*#__PURE__*/__nccwpck_require__.n(core);
 // EXTERNAL MODULE: ./node_modules/@actions/exec/lib/exec.js
 var exec = __nccwpck_require__(1514);
 // EXTERNAL MODULE: ./node_modules/@actions/glob/lib/glob.js
@@ -61702,6 +61703,18 @@ var io = __nccwpck_require__(7436);
 // EXTERNAL MODULE: external "fs"
 var external_fs_ = __nccwpck_require__(7147);
 var external_fs_default = /*#__PURE__*/__nccwpck_require__.n(external_fs_);
+;// CONCATENATED MODULE: ./src/cacheClient.ts
+
+
+function clientOverride() {
+    return {
+        ...(0,cache.defaultCacheClient)(),
+        saveCache: async (cacheId, archivePath, options) => {
+            core_default().info(JSON.stringify({ updated: "updated", cacheId, archivePath, options }));
+        }
+    };
+}
+
 // EXTERNAL MODULE: external "path"
 var external_path_ = __nccwpck_require__(1017);
 var external_path_default = /*#__PURE__*/__nccwpck_require__.n(external_path_);
@@ -61924,6 +61937,7 @@ async function rm(parent, dirent) {
 
 
 
+
 async function run() {
     if (!cache.isFeatureAvailable()) {
         return;
@@ -61957,7 +61971,7 @@ async function run() {
         core.info(`Saving paths:\n    ${savePaths.join("\n    ")}`);
         core.info(`In directory:\n    ${process.cwd()}`);
         core.info(`Using key:\n    ${key}`);
-        await cache.saveCache(savePaths, key);
+        await cache._saveCache(savePaths, key, clientOverride());
     }
     catch (e) {
         core.info(`[warning] ${e.message}`);
