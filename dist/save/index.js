@@ -61717,6 +61717,8 @@ function clientOverride() {
             };
         },
         saveCache: async (cacheId, archivePath, options) => {
+            core.notice('Check');
+            core.info('\u001b[31;46mRed foreground with a cyan background and \u001b[1mbold text at the end');
             core.info(JSON.stringify({ updated: "updated", cacheId, archivePath, options }));
         }
     };
