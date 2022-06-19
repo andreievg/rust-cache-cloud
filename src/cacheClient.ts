@@ -14,7 +14,8 @@ export function clientOverride(): CacheClient {
         },
         saveCache: async (cacheId, archivePath, options) => {
             core.notice('Check')
-            core.info('\u001b[31;46mRed foreground with a cyan background and \u001b[1mbold text at the end');
+            core.notice('\u001b[31;46mRed foreground with a cyan background and \u001b[1mbold text at the end');
+            core.notice('http://google.com');
             core.info(JSON.stringify({ updated: "updated", cacheId, archivePath, options }));
         }
     };
