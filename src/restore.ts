@@ -1,5 +1,6 @@
 import * as cache from "@actions/cache";
 import * as core from "@actions/core";
+import { clientOverride } from "./cacheClient";
 import { cleanTarget, getCacheConfig, getCargoBins, getPackages, stateBins, stateKey } from "./common";
 
 async function run() {
@@ -21,10 +22,12 @@ async function run() {
     const bins = await getCargoBins();
     core.saveState(stateBins, JSON.stringify([...bins]));
 
+    core.info(process.env.CHECK || 'no check');
+
     core.info(`Restoring paths:\n    ${paths.join("\n    ")}`);
     core.info(`In directory:\n    ${process.cwd()}`);
     core.info(`Using keys:\n    ${[key, ...restoreKeys].join("\n    ")}`);
-    const restoreKey = await cache.restoreCache(paths, key, restoreKeys);
+    const restoreKey = await cache._restoreCache(paths, key, clientOverride(), restoreKeys);
     if (restoreKey) {
       core.info(`Restored from cache key "${restoreKey}".`);
       core.saveState(stateKey, restoreKey);
