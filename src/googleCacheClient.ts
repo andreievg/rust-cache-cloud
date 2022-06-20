@@ -91,7 +91,7 @@ export function googleCacheClientProvider(): CacheClient | null {
             }
         },
         saveCache: async (cacheId, archivePath, options) => {
-            core.notice('saveCache')
+           await core.notice('saveCache')
             core.notice('\u001b[31;46mRed foreground with a cyan background and \u001b[1mbold text at the end');
             core.notice('http://google.com');
             core.info(JSON.stringify({ from: "saveCache", cacheId, archivePath, options }));
@@ -103,12 +103,12 @@ function getTempFileName() {
     return require('path').join(require('os').tmpdir(), require('uuid').v4())
 }
 
-async function serviceProvider(secret: string, operation: (_: drive_v3.Resource$Files) => void) {
+async function serviceProvider(secret: string, operation:  (_: drive_v3.Resource$Files) => void) {
     const keyFile = getTempFileName();
     await fs.promises.writeFile(keyFile, secret, 'utf-8')
 
     try {
-        operation(google.drive({
+        await operation(google.drive({
             version: 'v3', auth: new google.auth.GoogleAuth({
                 keyFile,
                 scopes: ['https://www.googleapis.com/auth/drive'],
