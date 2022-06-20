@@ -61,10 +61,10 @@ export function googleCacheClientProvider(): CacheClient | null {
 
     return {
         getCacheEntry: async (_key, _paths, _options) => {
-            serviceProvider(secret, (drive) => {
+            serviceProvider(secret, async (drive) => {
 
 
-                downloadFile(drive, folder_id);
+                await downloadFile(drive, folder_id);
 
 
 
