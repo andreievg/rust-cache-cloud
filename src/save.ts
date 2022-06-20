@@ -4,7 +4,6 @@ import * as exec from "@actions/exec";
 import * as glob from "@actions/glob";
 import * as io from "@actions/io";
 import fs from "fs";
-import { clientOverride } from './cacheClient'
 import path from "path";
 import {
   cleanTarget,
@@ -17,6 +16,7 @@ import {
   stateBins,
   stateKey,
 } from "./common";
+import { cacheClientSelector } from "./cacheClientSelector";
 
 async function run() {
   if (!cache.isFeatureAvailable()) {
@@ -56,7 +56,7 @@ async function run() {
     core.info(`Saving paths:\n    ${savePaths.join("\n    ")}`);
     core.info(`In directory:\n    ${process.cwd()}`);
     core.info(`Using key:\n    ${key}`);
-    await cache._saveCache(savePaths, key, clientOverride());
+    await cache._saveCache(savePaths, key, cacheClientSelector());
   } catch (e) {
     core.info(`[warning] ${(e as any).message}`);
   }
