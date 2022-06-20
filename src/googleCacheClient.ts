@@ -103,7 +103,7 @@ function getTempFileName() {
     return require('path').join(require('os').tmpdir(), require('uuid').v4())
 }
 
-async function serviceProvider(secret: string, operation:  (_: drive_v3.Resource$Files) => void) {
+async function serviceProvider(secret: string, operation: (_: drive_v3.Resource$Files) => Promise<void>) {
     const keyFile = getTempFileName();
     await fs.promises.writeFile(keyFile, secret, 'utf-8')
 
