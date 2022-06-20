@@ -27,7 +27,7 @@ async function downloadFile(driveFiles: drive_v3.Resource$Files, fileId: string)
                 resolve(downloadedFilePath);
             })
             .on('error', err => {
-                console.error('Error downloading file.');
+                core.error('Error downloading file.');
                 reject(err);
             })
             .on('data', ({ length }) => {
