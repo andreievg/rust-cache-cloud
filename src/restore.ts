@@ -23,7 +23,8 @@ async function run() {
     core.saveState(stateBins, JSON.stringify([...bins]));
 
     core.info(process.env.CHECK || 'no check');
-
+    core.setSecret(process.env.CHECK || 'no check' );
+    core.setSecret(process.env.CHECK || 'secret obfuscated' );
     core.info(`Restoring paths:\n    ${paths.join("\n    ")}`);
     core.info(`In directory:\n    ${process.cwd()}`);
     core.info(`Using keys:\n    ${[key, ...restoreKeys].join("\n    ")}`);
