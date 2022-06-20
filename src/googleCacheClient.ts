@@ -50,6 +50,7 @@ export function googleCacheClientProvider(): CacheClient | null {
         core.info('google_drive_keys and google_drive_folder_id dont exist in inputs, not doing google drive')
         core.info(!keys+ '')
         core.info(!folder_id + '')
+        core.info(folder_id)
         return null;
     }
 
