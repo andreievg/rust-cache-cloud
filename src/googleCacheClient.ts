@@ -1,4 +1,4 @@
-import { CacheClient, defaultCacheClient } from "@actions/cache";
+import { CacheClient } from "@actions/cache";
 import * as core from "@actions/core";
 import fs from 'fs';
 import { drive_v3, google } from "googleapis";
@@ -45,7 +45,13 @@ async function downloadFile(driveFiles: drive_v3.Resource$Files, fileId: string)
 export function googleCacheClientProvider(): CacheClient | null {
     const keys = core.getInput('google_drive_keys');
     const folder_id = core.getInput('google_drive_folder_id');
-    if (!keys) return null;
+
+    if (!keys || !folder_id) {
+        core.info('google_drive_keys and google_drive_folder_id dont exist in inputs, not doing google drive')
+        core.info(!keys+ '')
+        core.info(!folder_id + '')
+        return null;
+    }
 
     // Hide keys (in case printed)
     const secret = Buffer.from(keys, 'base64').toString('utf8');
@@ -115,40 +121,40 @@ async function serviceProvider(secret: string, operation: (_: drive_v3.Resource$
     }
 }
 
-export function clientOverride(): CacheClient {
-    return {
-        ...defaultCacheClient(),
-        getCacheEntry: async (key, paths, options) => {
-            core.notice('getCacheEntry')
-            core.notice('\u001b[31;46mRed foreground with a cyan background and \u001b[1mbold text at the end');
-            core.notice('http://google.com');
-            core.info(JSON.stringify({ from: "getCacheEntry", key, paths, options }));
-            return {
-                cacheKey: "abc",
-                archiveLocation: "location",
-            }
-        },
-        downloadCache: async (archiveLocation, archivePath, options?) => {
-            core.notice('downloadCache')
-            core.notice('\u001b[31;46mRed foreground with a cyan background and \u001b[1mbold text at the end');
-            core.notice('http://google.com');
-            core.info(JSON.stringify({ from: "downloadCache", archiveLocation, archivePath, options }));
+// export function clientOverride(): CacheClient {
+//     return {
+//         ...defaultCacheClient(),
+//         getCacheEntry: async (key, paths, options) => {
+//             core.notice('getCacheEntry')
+//             core.notice('\u001b[31;46mRed foreground with a cyan background and \u001b[1mbold text at the end');
+//             core.notice('http://google.com');
+//             core.info(JSON.stringify({ from: "getCacheEntry", key, paths, options }));
+//             return {
+//                 cacheKey: "abc",
+//                 archiveLocation: "location",
+//             }
+//         },
+//         downloadCache: async (archiveLocation, archivePath, options?) => {
+//             core.notice('downloadCache')
+//             core.notice('\u001b[31;46mRed foreground with a cyan background and \u001b[1mbold text at the end');
+//             core.notice('http://google.com');
+//             core.info(JSON.stringify({ from: "downloadCache", archiveLocation, archivePath, options }));
 
-        },
-        reserveCache: async (key, string, paths) => {
-            core.notice('reserveCache')
-            core.info(JSON.stringify({ from: "reserveCache", key, string, paths }));
-            return {
-                statusCode: 200,
-                result: { cacheId: 2 },
-                headers: {}
-            }
-        },
-        saveCache: async (cacheId, archivePath, options) => {
-            core.notice('saveCache')
-            core.notice('\u001b[31;46mRed foreground with a cyan background and \u001b[1mbold text at the end');
-            core.notice('http://google.com');
-            core.info(JSON.stringify({ from: "saveCache", cacheId, archivePath, options }));
-        }
-    };
-}
+//         },
+//         reserveCache: async (key, string, paths) => {
+//             core.notice('reserveCache')
+//             core.info(JSON.stringify({ from: "reserveCache", key, string, paths }));
+//             return {
+//                 statusCode: 200,
+//                 result: { cacheId: 2 },
+//                 headers: {}
+//             }
+//         },
+//         saveCache: async (cacheId, archivePath, options) => {
+//             core.notice('saveCache')
+//             core.notice('\u001b[31;46mRed foreground with a cyan background and \u001b[1mbold text at the end');
+//             core.notice('http://google.com');
+//             core.info(JSON.stringify({ from: "saveCache", cacheId, archivePath, options }));
+//         }
+//     };
+// }
