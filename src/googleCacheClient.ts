@@ -4,31 +4,30 @@ import fs from 'fs';
 import { drive_v3, google } from "googleapis";
 
 async function getFileSize(driveFiles: drive_v3.Resource$Files, fileId: string): Promise<number> {
-    const queryResult = await driveFiles.get({ fileId, fields: 'size' }, {});
+    const params: drive_v3.Params$Resource$Files$Get = { fileId, fields: 'size' };
+    const queryResult = await driveFiles.get(params);
 
     return Number.parseInt(queryResult.data.size || '0');
 }
 
-async function downloadFile(driveFiles: drive_v3.Resource$Files, fileId: string) {
+async function downloadFile(driveFiles: drive_v3.Resource$Files, filePath: string, fileId: string) {
     const fileSize = await getFileSize(driveFiles, fileId);
     const inverval = fileSize / 10
     let previousInterval = 0;
     let receivedData = 0;
 
-    let res = await driveFiles.get({ fileId, alt: 'media' }, { responseType: 'stream' });
+    let response = await driveFiles.get({ fileId, alt: 'media' }, { responseType: 'stream' });
 
     await new Promise((resolve, reject) => {
-        const downloadedFilePath = getTempFileName()
-        const downloadedFileStream = fs.createWriteStream(downloadedFilePath);
-
-        res.data
+        const downloadedFileStream = fs.createWriteStream(filePath);
+  
+        response.data
             .on('end', () => {
                 receivedData = fileSize;
-                resolve(downloadedFilePath);
+                resolve(true);
             })
-            .on('error', err => {
-                core.error('Error downloading file.');
-                reject(err);
+            .on('error', error => {
+                reject(error)
             })
             .on('data', ({ length }) => {
                 receivedData += length;
@@ -40,21 +39,50 @@ async function downloadFile(driveFiles: drive_v3.Resource$Files, fileId: string)
             .pipe(downloadedFileStream);
     });
 
+   
+}
+
+type UploadFileOptions = {
+    filePath: string,
+    folderId: string,
+    fileName: string
+}
+
+async function uploadFile(driveFiles: drive_v3.Resource$Files, { filePath, folderId, fileName }: UploadFileOptions) {
+    const params: drive_v3.Params$Resource$Files$Create = {
+        requestBody: {
+          name: fileName,
+          parents: [folderId],
+        },
+        media: {
+          body: fs.createReadStream(filePath),
+        },
+        fields: 'id',
+      };
+
+  const { data: { id } } = await driveFiles.create(params);
+
+  core.notice(`File uploaded https://drive.google.com/file/d/${id}/view?usp=sharing`)
+}
+
+function try_getInputs(inputNames: string[]): string[] {
+        const values = inputNames.map(inputName => core.getInput(inputName));
+        const valueExists = (e: string) => !!e;
+        const missingValueIndices = values.reduce((a, e, i) => !valueExists(e) ? [...a, i] : a, [] as number[] );
+
+        if (missingValueIndices.length === 0) return values;
+
+        if (missingValueIndices.length == inputNames.length) return [];
+
+        const suppliedValueIndices = values.reduce((a, e, i) => valueExists(e) ? [...a, i] : a, [] as number[]  );
+        const getNamesForIndices = (indices: number[]) =>  indices.map((i) => inputNames[i]).join(',')
+        throw new Error(`Missing inputs, supplied ( ${getNamesForIndices(suppliedValueIndices)} ) missing ( ${getNamesForIndices(missingValueIndices)}  )`);
 }
 
 export function googleCacheClientProvider(): CacheClient | null {
-    const keys = core.getInput('google_drive_keys');
-    const folder_id = core.getInput('google_drive_folder_id');
+    const [keys, folderId] = try_getInputs(['google_drive_keys', 'google_drive_folder_id']);
+    if (!keys) return null;
 
-    if (!keys || !folder_id) {
-        core.info('google_drive_keys and google_drive_folder_id dont exist in inputs, not doing google drive')
-        core.info(!keys+ '')
-        core.info(!folder_id + '')
-        core.info(folder_id)
-        return null;
-    }
-
-    // Hide keys (in case printed)
     const secret = Buffer.from(keys, 'base64').toString('utf8');
     // Hide secret  (in case printed)
     core.setSecret(secret);
@@ -62,12 +90,9 @@ export function googleCacheClientProvider(): CacheClient | null {
     return {
         getCacheEntry: async (_key, _paths, _options) => {
             serviceProvider(secret, async (drive) => {
-
-
-                await downloadFile(drive, folder_id);
-
-
-
+                const filePath = getTempFileName();
+                await downloadFile(drive, filePath, '1wLqpysN0ebTwhNut_ixVDPokLYN-_k5M');
+                await uploadFile(drive,{filePath, folderId, fileName: 'checkit.zip'} )
             })
             return {
                 cacheKey: "abc",
@@ -81,12 +106,11 @@ export function googleCacheClientProvider(): CacheClient | null {
             core.info(JSON.stringify({ from: "downloadCache", archiveLocation, archivePath, options }));
 
         },
-        reserveCache: async (key, string, paths) => {
-            core.notice('reserveCache')
-            core.info(JSON.stringify({ from: "reserveCache", key, string, paths }));
+        reserveCache: async (_key, _paths, _options) => {
             return {
                 statusCode: 200,
-                result: { cacheId: 2 },
+                // Cache id is not used, and not reserving cache in this implementation
+                result: { cacheId: 0 },
                 headers: {}
             }
         },
