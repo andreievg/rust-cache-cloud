@@ -20,7 +20,7 @@ async function downloadFile(driveFiles: drive_v3.Resource$Files, filePath: strin
 
     await new Promise((resolve, reject) => {
         const downloadedFileStream = fs.createWriteStream(filePath);
-  
+
         response.data
             .on('end', () => {
                 receivedData = fileSize;
@@ -39,7 +39,7 @@ async function downloadFile(driveFiles: drive_v3.Resource$Files, filePath: strin
             .pipe(downloadedFileStream);
     });
 
-   
+
 }
 
 type UploadFileOptions = {
@@ -51,32 +51,34 @@ type UploadFileOptions = {
 async function uploadFile(driveFiles: drive_v3.Resource$Files, { filePath, folderId, fileName }: UploadFileOptions) {
     const params: drive_v3.Params$Resource$Files$Create = {
         requestBody: {
-          name: fileName,
-          parents: [folderId],
+            name: fileName,
+            parents: [folderId],
         },
         media: {
-          body: fs.createReadStream(filePath),
+            body: fs.createReadStream(filePath),
         },
         fields: 'id',
-      };
+    };
 
-  const { data: { id } } = await driveFiles.create(params);
+    core.info('Uploaded file ...')
 
-  core.notice(`File uploaded https://drive.google.com/file/d/${id}/view?usp=sharing`)
+    const { data: { id } } = await driveFiles.create(params);
+
+    core.notice(`File uploaded https://drive.google.com/file/d/${id}/view?usp=sharing`)
 }
 
 function try_getInputs(inputNames: string[]): string[] {
-        const values = inputNames.map(inputName => core.getInput(inputName));
-        const valueExists = (e: string) => !!e;
-        const missingValueIndices = values.reduce((a, e, i) => !valueExists(e) ? [...a, i] : a, [] as number[] );
+    const values = inputNames.map(inputName => core.getInput(inputName));
+    const valueExists = (e: string) => !!e;
+    const missingValueIndices = values.reduce((a, e, i) => !valueExists(e) ? [...a, i] : a, [] as number[]);
 
-        if (missingValueIndices.length === 0) return values;
+    if (missingValueIndices.length === 0) return values;
 
-        if (missingValueIndices.length == inputNames.length) return [];
+    if (missingValueIndices.length == inputNames.length) return [];
 
-        const suppliedValueIndices = values.reduce((a, e, i) => valueExists(e) ? [...a, i] : a, [] as number[]  );
-        const getNamesForIndices = (indices: number[]) =>  indices.map((i) => inputNames[i]).join(',')
-        throw new Error(`Missing inputs, supplied ( ${getNamesForIndices(suppliedValueIndices)} ) missing ( ${getNamesForIndices(missingValueIndices)}  )`);
+    const suppliedValueIndices = values.reduce((a, e, i) => valueExists(e) ? [...a, i] : a, [] as number[]);
+    const getNamesForIndices = (indices: number[]) => indices.map((i) => inputNames[i]).join(',')
+    throw new Error(`Missing inputs, supplied ( ${getNamesForIndices(suppliedValueIndices)} ) missing ( ${getNamesForIndices(missingValueIndices)}  )`);
 }
 
 export function googleCacheClientProvider(): CacheClient | null {
@@ -89,10 +91,10 @@ export function googleCacheClientProvider(): CacheClient | null {
 
     return {
         getCacheEntry: async (_key, _paths, _options) => {
-            serviceProvider(secret, async (drive) => {
+           await serviceProvider(secret, async (drive) => {
                 const filePath = getTempFileName();
                 await downloadFile(drive, filePath, '10f6gVlV1EwpZyq9YeYEKUoD0p3dgKfl3');
-                await uploadFile(drive,{filePath, folderId, fileName: 'checkit.zip'} )
+                await uploadFile(drive, { filePath, folderId, fileName: 'checkit.zip' })
             })
             return {
                 cacheKey: "abc",
@@ -115,7 +117,7 @@ export function googleCacheClientProvider(): CacheClient | null {
             }
         },
         saveCache: async (cacheId, archivePath, options) => {
-           await core.notice('saveCache')
+            await core.notice('saveCache')
             core.notice('\u001b[31;46mRed foreground with a cyan background and \u001b[1mbold text at the end');
             core.notice('http://google.com');
             core.info(JSON.stringify({ from: "saveCache", cacheId, archivePath, options }));
